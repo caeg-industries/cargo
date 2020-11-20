@@ -29,3 +29,4 @@ pub mod shell;
 pub mod source;
 pub mod summary;
 mod workspace;
+pub(crate) mod subcrate;

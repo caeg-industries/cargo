@@ -18,6 +18,7 @@ use crate::util::errors::*;
 use crate::util::interning::InternedString;
 use crate::util::toml::{TomlManifest, TomlProfiles};
 use crate::util::{short_hash, Config, Filesystem};
+use crate::core::subcrate::SUBCRATE_DELIMETER;
 
 pub enum EitherManifest {
     Real(Manifest),
@@ -731,7 +732,7 @@ impl Target {
         &self.inner.name
     }
     pub fn crate_name(&self) -> String {
-        self.name().replace("-", "_")
+        self.name().replace("-", "_").replace(SUBCRATE_DELIMETER, "_")
     }
     pub fn src_path(&self) -> &TargetSourcePath {
         &self.inner.src_path

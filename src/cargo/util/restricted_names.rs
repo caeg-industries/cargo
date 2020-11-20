@@ -1,8 +1,10 @@
 //! Helpers for validating and checking names like package and crate names.
 
 use crate::util::CargoResult;
+use crate::core::subcrate::SUBCRATE_DELIMETER;
 use anyhow::bail;
 use std::path::Path;
+
 
 /// Returns `true` if the name contains non-ASCII characters.
 pub fn is_non_ascii_name(name: &str) -> bool {
@@ -68,11 +70,11 @@ pub fn validate_package_name(name: &str, what: &str, help: &str) -> CargoResult<
         }
     }
     for ch in chars {
-        if !(unicode_xid::UnicodeXID::is_xid_continue(ch) || ch == '-') {
+        if !(unicode_xid::UnicodeXID::is_xid_continue(ch) || ch == '-' || ch == SUBCRATE_DELIMETER) {
             bail!(
                 "invalid character `{}` in {}: `{}`, \
                 characters must be Unicode XID characters \
-                (numbers, `-`, `_`, or most letters){}",
+                (numbers, `-`, `_`, '/', or most letters){}",
                 ch,
                 what,
                 name,

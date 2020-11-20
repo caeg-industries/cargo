@@ -27,6 +27,7 @@ use crate::util::{self, paths, validate_package_name, Config, IntoUrl};
 
 mod targets;
 use self::targets::targets;
+use crate::core::subcrate::SUBCRATE_DELIMETER;
 
 /// Loads a `Cargo.toml` from a file on disk.
 ///
@@ -1036,6 +1037,10 @@ impl TomlManifest {
 
         validate_package_name(package_name, "package name", "")?;
 
+        // Once we have validated the name, we need to fix "intern" a valid package name for the compiler
+        // and other infrastructure
+        let package_name = package_name.replace(SUBCRATE_DELIMETER, "_");
+
         let pkgid = project.to_package_id(source_id)?;
 
         let edition = if let Some(ref edition) = project.edition {
@@ -1078,7 +1083,7 @@ impl TomlManifest {
         let targets = targets(
             &features,
             me,
-            package_name,
+            &package_name,
             package_root,
             edition,
             &project.build,
