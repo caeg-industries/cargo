@@ -135,8 +135,6 @@ impl Package {
     /// Gets the name of the package.
     pub fn name(&self) -> InternedString {
         self.package_id().name()
-        // let i_str = self.package_id().name().replace(SUBCRATE_DELIMETER, "_");
-        // i_str.into()
     }
 
     /// Get the safe (subcrate compatible) name of the package
