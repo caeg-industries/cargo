@@ -1,3 +1,7 @@
+# Cargo Crates-as-namespaces experiment
+
+This repo is a fork for the purpose of experimenting with namespaces as described in [this RFC](https://github.com/Manishearth/namespacing-rfc/blob/main/0000-packages-as-optional-namespaces.md).
+
 # Cargo
 
 Cargo downloads your Rust project’s dependencies and compiles your project.
