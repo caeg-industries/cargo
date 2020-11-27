@@ -1,10 +1,9 @@
 //! Helpers for validating and checking names like package and crate names.
 
+use crate::core::subcrate::{MAX_SUBCRATE_DEPTH, SUBCRATE_DELIMETER};
 use crate::util::CargoResult;
-use crate::core::subcrate::SUBCRATE_DELIMETER;
 use anyhow::bail;
 use std::path::Path;
-
 
 /// Returns `true` if the name contains non-ASCII characters.
 pub fn is_non_ascii_name(name: &str) -> bool {
@@ -69,15 +68,38 @@ pub fn validate_package_name(name: &str, what: &str, help: &str) -> CargoResult<
             );
         }
     }
-    for ch in chars {
-        if !(unicode_xid::UnicodeXID::is_xid_continue(ch) || ch == '-' || ch == SUBCRATE_DELIMETER) {
+
+    // It's hard to check for subcrate delimeter characters because it
+    // might actually be a sequence of characters! However, we can
+    // strip out the delimeter and see if the characters we're left
+    // with are all our other valid characters.
+    let name_without_subcrate_delim = if let Some(max_depth) = MAX_SUBCRATE_DEPTH {
+        let name_without_subcrate_delim = name.replacen(SUBCRATE_DELIMETER, "", max_depth);
+        if name_without_subcrate_delim.contains(SUBCRATE_DELIMETER) {
+            bail!(
+                "the name `{}` cannot be used as a {}, \
+                 crates can be namespaced at most {} levels deep{}",
+                name,
+                what,
+                max_depth,
+                help
+            );
+        }
+        name_without_subcrate_delim
+    } else {
+        name.replace(SUBCRATE_DELIMETER, "")
+    };
+
+    for ch in name_without_subcrate_delim.chars() {
+        if !(unicode_xid::UnicodeXID::is_xid_continue(ch) || ch == '-') {
             bail!(
                 "invalid character `{}` in {}: `{}`, \
                 characters must be Unicode XID characters \
-                (numbers, `-`, `_`, '/', or most letters){}",
+                (numbers, `-`, `_`, '{}', or most letters){}",
                 ch,
                 what,
                 name,
+                SUBCRATE_DELIMETER,
                 help
             );
         }
