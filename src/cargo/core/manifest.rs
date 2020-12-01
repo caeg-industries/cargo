@@ -12,13 +12,13 @@ use url::Url;
 
 use crate::core::compiler::CrateType;
 use crate::core::resolver::ResolveBehavior;
+use crate::core::subcrate::{SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT};
 use crate::core::{Dependency, PackageId, PackageIdSpec, SourceId, Summary};
 use crate::core::{Edition, Feature, Features, WorkspaceConfig};
 use crate::util::errors::*;
 use crate::util::interning::InternedString;
 use crate::util::toml::{TomlManifest, TomlProfiles};
 use crate::util::{short_hash, Config, Filesystem};
-use crate::core::subcrate::SUBCRATE_DELIMETER;
 
 pub enum EitherManifest {
     Real(Manifest),
@@ -732,7 +732,9 @@ impl Target {
         &self.inner.name
     }
     pub fn crate_name(&self) -> String {
-        self.name().replace("-", "_").replace(SUBCRATE_DELIMETER, "_")
+        self.name()
+            .replace("-", "_")
+            .replace(SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT)
     }
     pub fn src_path(&self) -> &TargetSourcePath {
         &self.inner.src_path
