@@ -1,6 +1,6 @@
 //! Helpers for validating and checking names like package and crate names.
 
-use crate::core::subcrate::{MAX_SUBCRATE_DEPTH, SUBCRATE_DELIMETER};
+use crate::core::manifest::{MAX_SUBCRATE_DEPTH, SUBCRATE_DELIMETER};
 use crate::util::CargoResult;
 use anyhow::bail;
 use std::path::Path;

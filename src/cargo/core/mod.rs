@@ -27,6 +27,5 @@ pub mod registry;
 pub mod resolver;
 pub mod shell;
 pub mod source;
-pub(crate) mod subcrate;
 pub mod summary;
 mod workspace;

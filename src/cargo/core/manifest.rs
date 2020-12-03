@@ -12,7 +12,6 @@ use url::Url;
 
 use crate::core::compiler::CrateType;
 use crate::core::resolver::ResolveBehavior;
-use crate::core::subcrate::{SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT};
 use crate::core::{Dependency, PackageId, PackageIdSpec, SourceId, Summary};
 use crate::core::{Edition, Feature, Features, WorkspaceConfig};
 use crate::util::errors::*;
@@ -24,6 +23,13 @@ pub enum EitherManifest {
     Real(Manifest),
     Virtual(VirtualManifest),
 }
+
+pub const SUBCRATE_DELIMETER: &str = "/";
+pub const MAX_SUBCRATE_DEPTH: Option<usize> = Some(1);
+/// This is used in contexts where the full subcrate name needs to be a valid filename, like the crate tarball.
+pub const SUBCRATE_DELIMETER_FILENAME_REPLACEMENT: &str = "~";
+// /// This is used in contexts where the full subcrate name needs to be referenced from Rust code.
+// pub const SUBCRATE_DELIMETER_RUST_CODE_REPLACEMENT: &str = "_";
 
 /// Contains all the information about a package, as loaded from a `Cargo.toml`.
 ///

@@ -2,6 +2,7 @@
 
 use cargo::{
     core::compiler::CompileMode,
+    core::manifest::SUBCRATE_DELIMETER,
     core::{Shell, Workspace},
     ops::CompileOptions,
     util::paths::dylib_path_envvar,
@@ -990,12 +991,12 @@ fn cargo_compile_with_invalid_dep_rename() {
     p.cargo("build")
         .with_status(101)
         .with_stderr(
-            "\
+            format!("\
 error: failed to parse manifest at `[..]`
 
 Caused by:
-  invalid character ` ` in dependency name: `haha this isn't a valid name 🐛`, characters must be Unicode XID characters (numbers, `-`, `_`, `/`, or most letters)
-",
+  invalid character ` ` in dependency name: `haha this isn't a valid name 🐛`, characters must be Unicode XID characters (numbers, `-`, `_`, `{}`, or most letters)
+", SUBCRATE_DELIMETER),
         )
         .run();
 }

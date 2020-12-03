@@ -108,7 +108,7 @@ pub fn package(ws: &Workspace<'_>, opts: &PackageOpts<'_>) -> CargoResult<Option
 
     verify_dependencies(pkg)?;
 
-    let filename = format!("{}-{}.crate", pkg.safe_name(), pkg.version());
+    let filename = format!("{}-{}.crate", pkg.file_safe_name(), pkg.version());
     let dir = ws.target_dir().join("package");
     let mut dst = {
         let tmp = format!(".{}", filename);
@@ -488,7 +488,7 @@ fn tar(
     let pkg = ws.current()?;
     let config = ws.config();
 
-    let base_name = format!("{}-{}", pkg.safe_name(), pkg.version());
+    let base_name = format!("{}-{}", pkg.file_safe_name(), pkg.version());
     let base_path = Path::new(&base_name);
     for ar_file in ar_files {
         let ArchiveFile {
@@ -654,7 +654,7 @@ fn run_verify(ws: &Workspace<'_>, tar: &FileLock, opts: &PackageOpts<'_>) -> Car
     let f = GzDecoder::new(tar.file());
     let dst = tar
         .parent()
-        .join(&format!("{}-{}", pkg.safe_name(), pkg.version()));
+        .join(&format!("{}-{}", pkg.file_safe_name(), pkg.version()));
     if dst.exists() {
         paths::remove_dir_all(&dst)?;
     }

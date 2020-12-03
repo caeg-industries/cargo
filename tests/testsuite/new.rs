@@ -1,5 +1,6 @@
 //! Tests for the `cargo new` command.
 
+use cargo::core::manifest::SUBCRATE_DELIMETER;
 use cargo_test_support::paths::{self, CargoPathExt};
 use cargo_test_support::{cargo_process, git_process};
 use std::env;
@@ -665,13 +666,14 @@ If you need a crate name to not match the directory name, consider using --name 
     cargo_process("new a¼")
         .env("USER", "foo")
         .with_status(101)
-        .with_stderr(
+        .with_stderr(format!(
             "\
 [ERROR] invalid character `¼` in crate name: `a¼`, \
-characters must be Unicode XID characters (numbers, `-`, `_`, `/`, or most letters)
+characters must be Unicode XID characters (numbers, `-`, `_`, `{}`, or most letters)
 If you need a crate name to not match the directory name, consider using --name flag.
 ",
-        )
+            SUBCRATE_DELIMETER
+        ))
         .run();
 }
 

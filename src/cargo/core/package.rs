@@ -19,10 +19,10 @@ use serde::Serialize;
 
 use crate::core::compiler::{CompileKind, RustcTargetData};
 use crate::core::dependency::DepKind;
+use crate::core::manifest::{SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT};
 use crate::core::resolver::features::ForceAllTargets;
 use crate::core::resolver::{HasDevUnits, Resolve};
 use crate::core::source::MaybePackage;
-use crate::core::subcrate::{SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT};
 use crate::core::{Dependency, Manifest, PackageId, SourceId, Target};
 use crate::core::{SourceMap, Summary, Workspace};
 use crate::ops;
@@ -137,8 +137,11 @@ impl Package {
         self.package_id().name()
     }
 
-    /// Get the safe (subcrate compatible) name of the package
-    pub fn safe_name(&self) -> InternedString {
+    /// Gets the name of the package that can be used in URLs and filenames
+    ///
+    /// This is to support subcrates, which may have a canonical
+    /// delimeter like '/' which is not valid in a filename.
+    pub fn file_safe_name(&self) -> InternedString {
         let i_str = self
             .package_id()
             .name()

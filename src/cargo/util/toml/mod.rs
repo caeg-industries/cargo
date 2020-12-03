@@ -27,7 +27,7 @@ use crate::util::{self, paths, validate_package_name, Config, IntoUrl};
 
 mod targets;
 use self::targets::targets;
-use crate::core::subcrate::SUBCRATE_DELIMETER;
+use crate::core::manifest::SUBCRATE_DELIMETER;
 
 /// Loads a `Cargo.toml` from a file on disk.
 ///
