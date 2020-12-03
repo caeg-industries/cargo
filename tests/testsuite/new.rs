@@ -668,7 +668,7 @@ If you need a crate name to not match the directory name, consider using --name 
         .with_stderr(
             "\
 [ERROR] invalid character `¼` in crate name: `a¼`, \
-characters must be Unicode XID characters (numbers, `-`, `_`, or most letters)
+characters must be Unicode XID characters (numbers, `-`, `_`, `/`, or most letters)
 If you need a crate name to not match the directory name, consider using --name flag.
 ",
         )

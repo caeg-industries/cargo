@@ -95,7 +95,7 @@ pub fn validate_package_name(name: &str, what: &str, help: &str) -> CargoResult<
             bail!(
                 "invalid character `{}` in {}: `{}`, \
                 characters must be Unicode XID characters \
-                (numbers, `-`, `_`, '{}', or most letters){}",
+                (numbers, `-`, `_`, `{}`, or most letters){}",
                 ch,
                 what,
                 name,
