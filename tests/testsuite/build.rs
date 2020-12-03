@@ -994,7 +994,7 @@ fn cargo_compile_with_invalid_dep_rename() {
 error: failed to parse manifest at `[..]`
 
 Caused by:
-  invalid character ` ` in dependency name: `haha this isn't a valid name 🐛`, characters must be Unicode XID characters (numbers, `-`, `_`, or most letters)
+  invalid character ` ` in dependency name: `haha this isn't a valid name 🐛`, characters must be Unicode XID characters (numbers, `-`, `_`, `/`, or most letters)
 ",
         )
         .run();
