@@ -56,6 +56,34 @@ fn validate_upload_foo() {
     );
 }
 
+fn validate_upload_foo_bar() {
+    publish::validate_upload(
+        r#"
+        {
+          "authors": [],
+          "badges": {},
+          "categories": [],
+          "deps": [],
+          "description": "foo bar",
+          "documentation": null,
+          "features": {},
+          "homepage": null,
+          "keywords": [],
+          "license": "MIT",
+          "license_file": null,
+          "links": null,
+          "name": "foo/bar",
+          "readme": null,
+          "readme_file": null,
+          "repository": null,
+          "vers": "0.0.1"
+          }
+        "#,
+        "foo~bar-0.0.1.crate",
+        &["Cargo.lock", "Cargo.toml", "Cargo.toml.orig", "src/main.rs"],
+    );
+}
+
 fn validate_upload_foo_clean() {
     publish::validate_upload(
         CLEAN_FOO_JSON,
@@ -103,6 +131,41 @@ See [..]
         .run();
 
     validate_upload_foo();
+}
+
+#[cargo_test]
+fn simple_with_a_subcrate() {
+    registry::init();
+
+    let p = project()
+        .file(
+            "Cargo.toml",
+            r#"
+                [project]
+                name = "foo/bar"
+                version = "0.0.1"
+                authors = []
+                license = "MIT"
+                description = "foo bar"
+            "#,
+        )
+        .file("src/main.rs", "fn main() {}")
+        .build();
+
+    p.cargo("publish --no-verify --token sekrit")
+        .with_stderr(&format!(
+            "\
+[UPDATING] `{reg}` index
+[WARNING] manifest has no documentation, [..]
+See [..]
+[PACKAGING] foo/bar v0.0.1 ([CWD])
+[UPLOADING] foo/bar v0.0.1 ([CWD])
+",
+            reg = registry::registry_path().to_str().unwrap()
+        ))
+        .run();
+
+    validate_upload_foo_bar();
 }
 
 #[cargo_test]
