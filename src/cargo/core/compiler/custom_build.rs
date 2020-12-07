@@ -168,7 +168,7 @@ fn build_work(cx: &mut Context<'_, '_>, unit: &Unit) -> CargoResult<Job> {
     }
 
     // Building the command to execute
-    let to_exec = script_dir.join(unit.target.name());
+    let to_exec = script_dir.join(unit.target.file_safe_name());
 
     // Start preparing the process to execute, starting out with some
     // environment variables. Note that the profile-related environment

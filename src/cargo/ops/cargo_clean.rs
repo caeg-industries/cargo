@@ -126,7 +126,7 @@ pub fn clean(ws: &Workspace<'_>, opts: &CleanOptions<'_>) -> CargoResult<()> {
     let packages = pkg_set.get_many(pkg_ids)?;
 
     for pkg in packages {
-        let pkg_dir = format!("{}-*", pkg.name());
+        let pkg_dir = format!("{}-*", pkg.file_safe_name());
 
         // Clean fingerprints.
         for (_, layout) in &layouts_with_host {
@@ -141,7 +141,7 @@ pub fn clean(ws: &Workspace<'_>, opts: &CleanOptions<'_>) -> CargoResult<()> {
                 }
                 continue;
             }
-            let crate_name = target.crate_name();
+            let crate_name = target.file_safe_crate_name();
             for &mode in &[
                 CompileMode::Build,
                 CompileMode::Test,

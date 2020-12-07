@@ -675,7 +675,7 @@ impl<'cfg> Workspace<'cfg> {
         for member in self.members.iter() {
             let package = self.packages.get(member);
             let name = match *package {
-                MaybePackage::Package(ref p) => p.name(),
+                MaybePackage::Package(ref p) => p.rust_code_safe_name(),
                 MaybePackage::Virtual(_) => continue,
             };
             if let Some(prev) = names.insert(name, member) {

@@ -655,7 +655,7 @@ pub fn exe_names(pkg: &Package, filter: &ops::CompileFilter) -> BTreeSet<String>
             .targets()
             .iter()
             .filter(|t| t.is_bin())
-            .map(|t| to_exe(t.name()))
+            .map(|t| to_exe(t.file_safe_name()))
             .collect(),
         CompileFilter::Only {
             all_targets: true, ..
@@ -663,7 +663,7 @@ pub fn exe_names(pkg: &Package, filter: &ops::CompileFilter) -> BTreeSet<String>
             .targets()
             .iter()
             .filter(|target| target.is_executable())
-            .map(|target| to_exe(target.name()))
+            .map(|target| to_exe(target.file_safe_name()))
             .collect(),
         CompileFilter::Only {
             ref bins,
@@ -674,20 +674,20 @@ pub fn exe_names(pkg: &Package, filter: &ops::CompileFilter) -> BTreeSet<String>
                 pkg.targets()
                     .iter()
                     .filter(|t| t.is_bin())
-                    .map(|t| t.name().to_string())
+                    .map(|t| t.file_safe_name())
                     .collect()
             });
             let all_examples: Vec<String> = examples.try_collect().unwrap_or_else(|| {
                 pkg.targets()
                     .iter()
                     .filter(|t| t.is_exe_example())
-                    .map(|t| t.name().to_string())
+                    .map(|t| t.file_safe_name())
                     .collect()
             });
 
             all_bins
-                .iter()
-                .chain(all_examples.iter())
+                .into_iter()
+                .chain(all_examples.into_iter())
                 .map(|name| to_exe(name))
                 .collect()
         }

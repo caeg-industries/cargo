@@ -250,7 +250,13 @@ impl<'a, 'cfg: 'a> CompilationFiles<'a, 'cfg> {
         } else {
             ""
         };
-        let name = format!("{}{}{}-{}", prefix, flavor, kind, unit.target.name());
+        let name = format!(
+            "{}{}{}-{}",
+            prefix,
+            flavor,
+            kind,
+            unit.target.file_safe_name()
+        );
         self.fingerprint_dir(unit).join(name)
     }
 
@@ -381,7 +387,7 @@ impl<'a, 'cfg: 'a> CompilationFiles<'a, 'cfg> {
             CompileMode::Doc { .. } => {
                 let path = self
                     .out_dir(unit)
-                    .join(unit.target.crate_name())
+                    .join(unit.target.file_safe_crate_name())
                     .join("index.html");
                 vec![OutputFile {
                     path,

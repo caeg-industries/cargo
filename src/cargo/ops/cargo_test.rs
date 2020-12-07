@@ -164,7 +164,7 @@ fn run_doc_tests(
         p.arg("--test")
             .arg(unit.target.src_path().path().unwrap())
             .arg("--crate-name")
-            .arg(&unit.target.crate_name());
+            .arg(&unit.target.rust_code_safe_name());
 
         if doctest_xcompile {
             if let CompileKind::Target(target) = unit.kind {

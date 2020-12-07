@@ -464,7 +464,10 @@ fn build_path_deps(ws: &Workspace<'_>) -> HashMap<String, SourceId> {
             Ok(p) => p,
             Err(_) => return,
         };
-        ret.insert(pkg.name().to_string(), pkg.package_id().source_id());
+        ret.insert(
+            pkg.rust_code_safe_name().to_string(),
+            pkg.package_id().source_id(),
+        );
         visited.insert(pkg.package_id().source_id());
         build_pkg(&pkg, ws, ret, visited);
     }

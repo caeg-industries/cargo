@@ -85,11 +85,16 @@ impl FileType {
             Some(metadata) => format!(
                 "{}{}-{}{}",
                 self.prefix,
-                target.crate_name(),
+                target.file_safe_crate_name(),
                 metadata,
                 self.suffix
             ),
-            None => format!("{}{}{}", self.prefix, target.crate_name(), self.suffix),
+            None => format!(
+                "{}{}{}",
+                self.prefix,
+                target.file_safe_crate_name(),
+                self.suffix
+            ),
         }
     }
 
@@ -97,9 +102,9 @@ impl FileType {
     /// it to the destination directory.
     pub fn uplift_filename(&self, target: &Target) -> String {
         let name = if self.should_replace_hyphens {
-            target.crate_name()
+            target.file_safe_crate_name()
         } else {
-            target.name().to_string()
+            target.file_safe_name()
         };
         format!("{}{}{}", self.prefix, name, self.suffix)
     }

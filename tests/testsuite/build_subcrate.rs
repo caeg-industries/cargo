@@ -6,26 +6,26 @@ use cargo::{
     ops::CompileOptions,
     Config,
 };
-use cargo_test_support::{basic_bin_manifest, basic_manifest, main_file, paths, project};
+use cargo_test_support::{basic_manifest, main_file, named_bin_manifest, paths, project};
 use std::env;
 
 #[cargo_test]
 fn cargo_compile_simple() {
     let p = project()
-        .file("Cargo.toml", &basic_bin_manifest("foo/bar"))
+        .file("Cargo.toml", &named_bin_manifest("foo/bar", "foo"))
         .file("src/foo.rs", &main_file(r#""i am foo""#, &[]))
         .build();
 
     p.cargo("build").run();
-    assert!(p.bin("foo~bar").is_file());
+    assert!(p.bin("foo").is_file());
 
-    p.process(&p.bin("foo~bar")).with_stdout("i am foo\n").run();
+    p.process(&p.bin("foo")).with_stdout("i am foo\n").run();
 }
 
 #[cargo_test]
 fn cargo_fail_with_no_stderr() {
     let p = project()
-        .file("Cargo.toml", &basic_bin_manifest("foo/bar"))
+        .file("Cargo.toml", &named_bin_manifest("foo/bar", "foo"))
         .file("src/foo.rs", &String::from("refusal"))
         .build();
     p.cargo("build --message-format=json")
@@ -39,7 +39,7 @@ fn cargo_fail_with_no_stderr() {
 #[cargo_test]
 fn cargo_compile_incremental() {
     let p = project()
-        .file("Cargo.toml", &basic_bin_manifest("foo/bar"))
+        .file("Cargo.toml", &named_bin_manifest("foo/bar", "foo"))
         .file("src/foo.rs", &main_file(r#""i am foo""#, &[]))
         .build();
 
@@ -56,6 +56,33 @@ fn cargo_compile_incremental() {
             "[RUNNING] `rustc [..] -C incremental=[..]/target/debug/incremental[..]`\n",
         )
         .run();
+}
+
+#[cargo_test]
+fn cargo_compile_simple_binary_with_implicit_name() {
+    let p = project()
+        .file(
+            "Cargo.toml",
+            r#"
+                [package]
+                name = "foo/bar"
+                version = "0.1.0"
+                authors = []
+
+                [profile.dev]
+                incremental = false
+
+                [profile.release]
+                incremental = true
+            "#,
+        )
+        .file("src/main.rs", "fn main() { println!(\"i am foo\");}")
+        .build();
+
+    p.cargo("build").run();
+    assert!(p.bin("foo_bar").is_file());
+
+    p.process(&p.bin("foo_bar")).with_stdout("i am foo\n").run();
 }
 
 #[cargo_test]
@@ -138,14 +165,14 @@ fn cargo_compile_with_workspace_excluded() {
 #[cargo_test]
 fn cargo_compile_manifest_path() {
     let p = project()
-        .file("Cargo.toml", &basic_bin_manifest("foo/bar"))
+        .file("Cargo.toml", &named_bin_manifest("foo/bar", "foo"))
         .file("src/foo.rs", &main_file(r#""i am foo""#, &[]))
         .build();
 
     p.cargo("build --manifest-path foo/Cargo.toml")
         .cwd(p.root().parent().unwrap())
         .run();
-    assert!(p.bin("foo~bar").is_file());
+    assert!(p.bin("foo").is_file());
 }
 
 #[cargo_test]
@@ -238,7 +265,7 @@ fn cargo_compile_api_exposes_artifact_paths() {
         .1
         .to_str()
         .unwrap()
-        .contains("the_foo_bin~bar"));
+        .contains("the_foo_bin_bar"));
 
     assert_eq!(1, result.cdylibs.len());
     // The exact library path varies by platform, but should certainly exist at least
@@ -247,13 +274,13 @@ fn cargo_compile_api_exposes_artifact_paths() {
         .1
         .to_str()
         .unwrap()
-        .contains("the_foo_lib~bar"));
+        .contains("the_foo_lib_bar"));
 }
 
 #[cargo_test]
 fn cargo_compile_with_invalid_code() {
     let p = project()
-        .file("Cargo.toml", &basic_bin_manifest("foo/bar"))
+        .file("Cargo.toml", &named_bin_manifest("foo/bar", "foo"))
         .file("src/foo.rs", "invalid rust code!")
         .build();
 

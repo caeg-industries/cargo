@@ -1,5 +1,8 @@
 use super::encode::Metadata;
-use crate::core::dependency::DepKind;
+use crate::core::{
+    dependency::DepKind,
+    manifest::{SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_RUST_CODE_REPLACEMENT},
+};
 use crate::core::{Dependency, PackageId, PackageIdSpec, Summary, Target};
 use crate::util::errors::CargoResult;
 use crate::util::interning::InternedString;
@@ -310,10 +313,14 @@ unable to verify that `{0}` is the same as when the lockfile was generated
             self.dependencies_listed(from, to)
         };
 
-        let crate_name = to_target.crate_name();
+        let crate_name = to_target.rust_code_safe_name();
         let mut names = deps.iter().map(|d| {
             d.explicit_name_in_toml()
-                .map(|s| s.as_str().replace("-", "_"))
+                .map(|s| {
+                    s.as_str()
+                        .replace("-", "_")
+                        .replace(SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_RUST_CODE_REPLACEMENT)
+                })
                 .unwrap_or_else(|| crate_name.clone())
         });
         let name = names.next().unwrap_or_else(|| crate_name.clone());

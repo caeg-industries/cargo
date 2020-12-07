@@ -226,8 +226,8 @@ fn rustc(cx: &mut Context<'_, '_>, unit: &Unit, exec: &Arc<dyn Executor>) -> Car
     let link_type = (&unit.target).into();
 
     let dep_info_name = match cx.files().metadata(unit) {
-        Some(metadata) => format!("{}-{}.d", unit.target.crate_name(), metadata),
-        None => format!("{}.d", unit.target.crate_name()),
+        Some(metadata) => format!("{}-{}.d", unit.target.file_safe_crate_name(), metadata),
+        None => format!("{}.d", unit.target.file_safe_crate_name()),
     };
     let rustc_dep_info_loc = root.join(dep_info_name);
     let dep_info_loc = fingerprint::dep_info_loc(cx, unit);
@@ -582,7 +582,9 @@ fn rustdoc(cx: &mut Context<'_, '_>, unit: &Unit) -> CargoResult<Work> {
     let bcx = cx.bcx;
     let mut rustdoc = cx.compilation.rustdoc_process(unit)?;
     rustdoc.inherit_jobserver(&cx.jobserver);
-    rustdoc.arg("--crate-name").arg(&unit.target.crate_name());
+    rustdoc
+        .arg("--crate-name")
+        .arg(&unit.target.rust_code_safe_name());
     add_path_args(bcx, unit, &mut rustdoc);
     add_cap_lints(bcx, unit, &mut rustdoc);
 
@@ -791,7 +793,8 @@ fn build_base_args(
     } = unit.profile;
     let test = unit.mode.is_any_test();
 
-    cmd.arg("--crate-name").arg(&unit.target.crate_name());
+    cmd.arg("--crate-name")
+        .arg(&unit.target.rust_code_safe_name());
 
     let edition = unit.target.edition();
     if edition != Edition::Edition2015 {

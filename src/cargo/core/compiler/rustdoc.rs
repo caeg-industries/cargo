@@ -145,10 +145,10 @@ pub fn add_root_urls(
                         url.push_str("{pkg_name}/{version}/");
                     }
                     let url = url
-                        .replace("{pkg_name}", &dep.unit.pkg.name())
+                        .replace("{pkg_name}", &dep.unit.pkg.registry_safe_file_name())
                         .replace("{version}", &dep.unit.pkg.version().to_string());
                     rustdoc.arg("--extern-html-root-url");
-                    rustdoc.arg(format!("{}={}", dep.unit.target.crate_name(), url));
+                    rustdoc.arg(format!("{}={}", dep.unit.target.rust_code_safe_name(), url));
                     unstable_opts = true;
                 }
             }

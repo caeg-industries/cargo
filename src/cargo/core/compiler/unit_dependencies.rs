@@ -141,7 +141,7 @@ fn attach_std_deps(
             deps.extend(std_roots[&unit.kind].iter().map(|unit| UnitDep {
                 unit: unit.clone(),
                 unit_for: UnitFor::new_normal(),
-                extern_crate_name: unit.pkg.name(),
+                extern_crate_name: unit.pkg.rust_code_safe_name(),
                 // TODO: Does this `public` make sense?
                 public: true,
                 noprelude: true,
