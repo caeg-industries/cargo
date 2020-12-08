@@ -19,7 +19,7 @@ use serde::Serialize;
 
 use crate::core::compiler::{CompileKind, RustcTargetData};
 use crate::core::dependency::DepKind;
-use crate::core::manifest::{SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT};
+use crate::core::manifest::SUBCRATE_DELIMETER;
 use crate::core::resolver::features::ForceAllTargets;
 use crate::core::resolver::{HasDevUnits, Resolve};
 use crate::core::source::MaybePackage;
@@ -142,11 +142,7 @@ impl Package {
     }
 
     pub fn file_safe_name(&self) -> InternedString {
-        let i_str = self
-            .package_id()
-            .name()
-            .replace(SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT);
-        i_str.into()
+        self.package_id().file_safe_name()
     }
 
     /// Gets the name of the package that can be used in URLs and filenames

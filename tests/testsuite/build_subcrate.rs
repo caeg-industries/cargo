@@ -295,3 +295,36 @@ To learn more, run the command again with --verbose.\n",
         .run();
     assert!(p.root().join("Cargo.lock").is_file());
 }
+
+#[cargo_test]
+fn cargo_compile_with_build_script_puts_output_in_correct_folder() {
+    let p = project()
+        .file(
+            "Cargo.toml",
+            r#"
+                [package]
+                name = "foo/bar"
+                authors = []
+                version = "0.0.0"
+            "#,
+        )
+        .file("src/lib.rs", "pub fn bar() {}")
+        .file("build.rs", "pub fn main() { println!(\"Hello world\"); }")
+        .build();
+    p.cargo("build").run();
+
+    let build_script_dir = p.target_debug_dir().join("build");
+    let matches: Vec<std::fs::DirEntry> = build_script_dir
+        .read_dir()
+        .expect("build dir did not exist")
+        .map(|dir| dir.unwrap())
+        .filter(|dir| dir.file_name().to_string_lossy().starts_with("foo_bar"))
+        .filter(|dir| dir.path().join("output").exists())
+        .collect();
+
+    assert!(matches.len() >= 1);
+
+    let output_contents = std::fs::read_to_string(matches[0].path().join("output"))
+        .unwrap_or_else(|e| panic!("could not read file {}: {}", matches[0].path().display(), e));
+    assert_eq!(output_contents, "Hello world\n");
+}

@@ -13,6 +13,8 @@ use crate::core::source::SourceId;
 use crate::util::interning::InternedString;
 use crate::util::{CargoResult, ToSemver};
 
+use super::manifest::{SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT};
+
 lazy_static::lazy_static! {
     static ref PACKAGE_ID_CACHE: Mutex<HashSet<&'static PackageIdInner>> =
         Mutex::new(HashSet::new());
@@ -138,6 +140,12 @@ impl PackageId {
 
     pub fn name(self) -> InternedString {
         self.inner.name
+    }
+    pub fn file_safe_name(self) -> InternedString {
+        let i_str = self
+            .name()
+            .replace(SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT);
+        i_str.into()
     }
     pub fn version(self) -> &'static semver::Version {
         &self.inner.version

@@ -200,7 +200,7 @@ impl<'a, 'cfg: 'a> CompilationFiles<'a, 'cfg> {
     /// Note that some units may share the same directory, so care should be
     /// taken in those cases!
     fn pkg_dir(&self, unit: &Unit) -> String {
-        let name = unit.pkg.package_id().name();
+        let name = unit.pkg.package_id().file_safe_name();
         match self.metas[unit] {
             Some(ref meta) => format!("{}-{}", name, meta),
             None => format!("{}-{}", name, self.target_short_hash(unit)),
