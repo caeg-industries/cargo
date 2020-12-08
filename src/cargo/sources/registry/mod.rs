@@ -460,7 +460,7 @@ impl<'cfg> RegistrySource<'cfg> {
     fn unpack_package(&self, pkg: PackageId, tarball: &File) -> CargoResult<PathBuf> {
         // The `.cargo-ok` file is used to track if the source is already
         // unpacked.
-        let package_dir = format!("{}-{}", pkg.name(), pkg.version());
+        let package_dir = format!("{}-{}", pkg.registry_safe_file_name(), pkg.version());
         let dst = self.src_path.join(&package_dir);
         dst.create_dir()?;
         let path = dst.join(PACKAGE_SOURCE_LOCK);

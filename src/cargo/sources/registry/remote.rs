@@ -137,7 +137,7 @@ impl<'cfg> RemoteRegistry<'cfg> {
     }
 
     fn filename(&self, pkg: PackageId) -> String {
-        format!("{}-{}.crate", pkg.name(), pkg.version())
+        format!("{}-{}.crate", pkg.registry_safe_file_name(), pkg.version())
     }
 }
 
@@ -276,7 +276,7 @@ impl<'cfg> RegistryData for RemoteRegistry<'cfg> {
         }
         let prefix = make_dep_prefix(&*pkg.name());
         let url = url
-            .replace(CRATE_TEMPLATE, &*pkg.name())
+            .replace(CRATE_TEMPLATE, &*pkg.registry_safe_file_name())
             .replace(VERSION_TEMPLATE, &pkg.version().to_string())
             .replace(PREFIX_TEMPLATE, &prefix)
             .replace(LOWER_PREFIX_TEMPLATE, &prefix.to_lowercase());

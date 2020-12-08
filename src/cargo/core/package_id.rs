@@ -13,7 +13,10 @@ use crate::core::source::SourceId;
 use crate::util::interning::InternedString;
 use crate::util::{CargoResult, ToSemver};
 
-use super::manifest::{SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT};
+use super::manifest::{
+    SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT,
+    SUBCRATE_DELIMETER_REGISTRY_FILENAME_REPLACEMENT,
+};
 
 lazy_static::lazy_static! {
     static ref PACKAGE_ID_CACHE: Mutex<HashSet<&'static PackageIdInner>> =
@@ -147,6 +150,14 @@ impl PackageId {
             .replace(SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_FILENAME_REPLACEMENT);
         i_str.into()
     }
+    pub fn registry_safe_file_name(self) -> InternedString {
+        let i_str = self.name().replace(
+            SUBCRATE_DELIMETER,
+            SUBCRATE_DELIMETER_REGISTRY_FILENAME_REPLACEMENT,
+        );
+        i_str.into()
+    }
+
     pub fn version(self) -> &'static semver::Version {
         &self.inner.version
     }

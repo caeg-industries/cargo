@@ -195,10 +195,10 @@ fn sync(
         let dir_has_version_suffix = opts.versioned_dirs || id.version() != max_version;
         let dst_name = if dir_has_version_suffix {
             // Eg vendor/futures-0.1.13
-            format!("{}-{}", id.name(), id.version())
+            format!("{}-{}", id.file_safe_name(), id.version())
         } else {
             // Eg vendor/futures
-            id.name().to_string()
+            id.file_safe_name().to_string()
         };
 
         sources.insert(id.source_id());

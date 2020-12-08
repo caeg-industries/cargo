@@ -438,6 +438,9 @@ impl Manifest {
     pub fn name(&self) -> InternedString {
         self.package_id().name()
     }
+    pub fn file_safe_name(&self) -> InternedString {
+        self.package_id().file_safe_name()
+    }
     pub fn package_id(&self) -> PackageId {
         self.summary.package_id()
     }
@@ -550,7 +553,7 @@ impl Manifest {
         target_dir
             .into_path_unlocked()
             .join(".metabuild")
-            .join(format!("metabuild-{}-{}.rs", self.name(), hash))
+            .join(format!("metabuild-{}-{}.rs", self.file_safe_name(), hash))
     }
 }
 

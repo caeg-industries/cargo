@@ -80,7 +80,7 @@ impl<'cfg> RegistryData for LocalRegistry<'cfg> {
     }
 
     fn download(&mut self, pkg: PackageId, checksum: &str) -> CargoResult<MaybeLock> {
-        let crate_file = format!("{}-{}.crate", pkg.name(), pkg.version());
+        let crate_file = format!("{}-{}.crate", pkg.registry_safe_file_name(), pkg.version());
 
         // Note that the usage of `into_path_unlocked` here is because the local
         // crate files here never change in that we're not the one writing them,
@@ -90,7 +90,7 @@ impl<'cfg> RegistryData for LocalRegistry<'cfg> {
 
         // If we've already got an unpacked version of this crate, then skip the
         // checksum below as it is in theory already verified.
-        let dst = format!("{}-{}", pkg.name(), pkg.version());
+        let dst = format!("{}-{}", pkg.registry_safe_file_name(), pkg.version());
         if self.src_path.join(dst).into_path_unlocked().exists() {
             return Ok(MaybeLock::Ready(crate_file));
         }
