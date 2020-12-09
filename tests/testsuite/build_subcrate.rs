@@ -263,7 +263,12 @@ fn cargo_compile_with_subcrate_dependency() {
         )
         .file(
             "src/main.rs",
-            "fn main() {println!(\"The answer is {}\", foo_bar::answer());}",
+            r#"
+              use foo_bar::answer;
+              fn main() {
+                  println!("The answer is {}", answer());
+              }
+            "#,
         )
         .build();
     let _bar = project()
@@ -276,6 +281,58 @@ fn cargo_compile_with_subcrate_dependency() {
                 name = "{}"
                 version = "0.0.1"
                 edition = "2018"
+                authors = []
+            "#,
+                namespaced_name(&["foo", "bar"])
+            ),
+        )
+        .file("src/lib.rs", "pub fn answer() -> i32 { 42 }")
+        .build();
+    p.cargo("build").run();
+
+    p.process(&p.bin("foo"))
+        .with_stdout("The answer is 42\n")
+        .run();
+}
+
+#[cargo_test]
+fn cargo_compile_with_subcrate_dependency_2015_syntax() {
+    let p = project()
+        .file(
+            "Cargo.toml",
+            &format!(
+                r#"
+                [package]
+                name = "foo"
+                version = "0.0.1"
+                authors = []
+
+                [dependencies]
+                "{}" = {{ path = "../foo-bar" }}
+            "#,
+                namespaced_name(&["foo", "bar"])
+            ),
+        )
+        .file(
+            "src/main.rs",
+            r#"
+              extern crate foo_bar;
+              use foo_bar::answer;
+              fn main() {
+                  println!("The answer is {}", answer());
+              }
+            "#,
+        )
+        .build();
+    let _bar = project()
+        .at("foo-bar")
+        .file(
+            "Cargo.toml",
+            &format!(
+                r#"
+                [package]
+                name = "{}"
+                version = "0.0.1"
                 authors = []
             "#,
                 namespaced_name(&["foo", "bar"])
