@@ -2,17 +2,25 @@
 
 use cargo::{
     core::compiler::CompileMode,
+    core::manifest::SUBCRATE_DELIMETER,
     core::{Shell, Workspace},
     ops::CompileOptions,
     Config,
 };
-use cargo_test_support::{basic_manifest, main_file, named_bin_manifest, paths, project};
+use cargo_test_support::{main_file, named_bin_manifest, paths, project};
 use std::env;
+
+fn namespaced_name(name_parts: &[&str]) -> String {
+    name_parts.join(SUBCRATE_DELIMETER)
+}
 
 #[cargo_test]
 fn cargo_compile_simple() {
     let p = project()
-        .file("Cargo.toml", &named_bin_manifest("foo/bar", "foo"))
+        .file(
+            "Cargo.toml",
+            &named_bin_manifest(&namespaced_name(&["foo", "bar"]), "foo"),
+        )
         .file("src/foo.rs", &main_file(r#""i am foo""#, &[]))
         .build();
 
@@ -25,7 +33,10 @@ fn cargo_compile_simple() {
 #[cargo_test]
 fn cargo_fail_with_no_stderr() {
     let p = project()
-        .file("Cargo.toml", &named_bin_manifest("foo/bar", "foo"))
+        .file(
+            "Cargo.toml",
+            &named_bin_manifest(&namespaced_name(&["foo", "bar"]), "foo"),
+        )
         .file("src/foo.rs", &String::from("refusal"))
         .build();
     p.cargo("build --message-format=json")
@@ -34,38 +45,15 @@ fn cargo_fail_with_no_stderr() {
         .run();
 }
 
-/// Checks that the `CARGO_INCREMENTAL` environment variable results in
-/// `rustc` getting `-C incremental` passed to it.
-#[cargo_test]
-fn cargo_compile_incremental() {
-    let p = project()
-        .file("Cargo.toml", &named_bin_manifest("foo/bar", "foo"))
-        .file("src/foo.rs", &main_file(r#""i am foo""#, &[]))
-        .build();
-
-    p.cargo("build -v")
-        .env("CARGO_INCREMENTAL", "1")
-        .with_stderr_contains(
-            "[RUNNING] `rustc [..] -C incremental=[..]/target/debug/incremental[..]`\n",
-        )
-        .run();
-
-    p.cargo("test -v")
-        .env("CARGO_INCREMENTAL", "1")
-        .with_stderr_contains(
-            "[RUNNING] `rustc [..] -C incremental=[..]/target/debug/incremental[..]`\n",
-        )
-        .run();
-}
-
 #[cargo_test]
 fn cargo_compile_simple_binary_with_implicit_name() {
     let p = project()
         .file(
             "Cargo.toml",
-            r#"
+            &format!(
+                r#"
                 [package]
-                name = "foo/bar"
+                name = "{}"
                 version = "0.1.0"
                 authors = []
 
@@ -75,6 +63,8 @@ fn cargo_compile_simple_binary_with_implicit_name() {
                 [profile.release]
                 incremental = true
             "#,
+                namespaced_name(&["foo", "bar"])
+            ),
         )
         .file("src/main.rs", "fn main() { println!(\"i am foo\");}")
         .build();
@@ -86,86 +76,12 @@ fn cargo_compile_simple_binary_with_implicit_name() {
 }
 
 #[cargo_test]
-fn incremental_profile() {
+fn cargo_compile_manifest_path() {
     let p = project()
         .file(
             "Cargo.toml",
-            r#"
-                [package]
-                name = "foo/bar"
-                version = "0.1.0"
-                authors = []
-
-                [profile.dev]
-                incremental = false
-
-                [profile.release]
-                incremental = true
-            "#,
+            &named_bin_manifest(&namespaced_name(&["foo", "bar"]), "foo"),
         )
-        .file("src/main.rs", "fn main() {}")
-        .build();
-
-    p.cargo("build -v")
-        .env_remove("CARGO_INCREMENTAL")
-        .with_stderr_does_not_contain("[..]C incremental=[..]")
-        .run();
-
-    p.cargo("build -v")
-        .env("CARGO_INCREMENTAL", "1")
-        .with_stderr_contains("[..]C incremental=[..]")
-        .run();
-
-    p.cargo("build --release -v")
-        .env_remove("CARGO_INCREMENTAL")
-        .with_stderr_contains("[..]C incremental=[..]")
-        .run();
-
-    p.cargo("build --release -v")
-        .env("CARGO_INCREMENTAL", "0")
-        .with_stderr_does_not_contain("[..]C incremental=[..]")
-        .run();
-}
-
-#[cargo_test]
-fn incremental_config() {
-    let p = project()
-        .file("src/main.rs", "fn main() {}")
-        .file(
-            ".cargo/config",
-            r#"
-                [build]
-                incremental = false
-            "#,
-        )
-        .build();
-
-    p.cargo("build -v")
-        .env_remove("CARGO_INCREMENTAL")
-        .with_stderr_does_not_contain("[..]C incremental=[..]")
-        .run();
-
-    p.cargo("build -v")
-        .env("CARGO_INCREMENTAL", "1")
-        .with_stderr_contains("[..]C incremental=[..]")
-        .run();
-}
-
-#[cargo_test]
-fn cargo_compile_with_workspace_excluded() {
-    let p = project().file("src/main.rs", "fn main() {}").build();
-
-    p.cargo("build --workspace --exclude foo")
-        .with_stderr_does_not_contain("[..]virtual[..]")
-        .with_stderr_contains("[..]no packages to compile")
-        .with_status(101)
-        .run();
-}
-
-#[cargo_test]
-fn cargo_compile_manifest_path() {
-    let p = project()
-        .file("Cargo.toml", &named_bin_manifest("foo/bar", "foo"))
         .file("src/foo.rs", &main_file(r#""i am foo""#, &[]))
         .build();
 
@@ -180,9 +96,10 @@ fn cargo_compile_duplicate_build_targets() {
     let p = project()
         .file(
             "Cargo.toml",
-            r#"
+            &format!(
+                r#"
                 [package]
-                name = "foo/bar"
+                name = "{}"
                 version = "0.0.1"
                 authors = []
 
@@ -193,37 +110,21 @@ fn cargo_compile_duplicate_build_targets() {
 
                 [dependencies]
             "#,
+                namespaced_name(&["foo", "bar"])
+            ),
         )
         .file("src/main.rs", "#![allow(warnings)] fn main() {}")
         .build();
 
     p.cargo("build")
-        .with_stderr(
+        .with_stderr(&format!(
             "\
 warning: file found to be present in multiple build targets: [..]main.rs
-[COMPILING] foo/bar v0.0.1 ([..])
+[COMPILING] {} v0.0.1 ([..])
 [FINISHED] [..]
 ",
-        )
-        .run();
-}
-
-#[cargo_test]
-fn cargo_compile_with_invalid_version() {
-    let p = project()
-        .file("Cargo.toml", &basic_manifest("foo/bar", "1.0"))
-        .build();
-
-    p.cargo("build")
-        .with_status(101)
-        .with_stderr(
-            "\
-[ERROR] failed to parse manifest at `[..]`
-
-Caused by:
-  Expected dot for key `package.version`
-",
-        )
+            namespaced_name(&["foo", "bar"])
+        ))
         .run();
 }
 
@@ -232,21 +133,26 @@ fn cargo_compile_api_exposes_artifact_paths() {
     let p = project()
         .file(
             "Cargo.toml",
-            r#"
+            &format!(
+                r#"
                 [package]
-                name = "foo/bar"
+                name = "{}"
                 authors = []
                 version = "0.0.0"
 
                 [[bin]]
-                name = "the_foo_bin/bar"
+                name = "{}"
                 path = "src/bin.rs"
 
                 [lib]
-                name = "the_foo_lib/bar"
+                name = "{}"
                 path = "src/foo.rs"
                 crate-type = ["cdylib", "rlib"]
             "#,
+                namespaced_name(&["foo", "bar"]),
+                namespaced_name(&["the_foo_bin", "bar"]),
+                namespaced_name(&["the_foo_lib", "bar"])
+            ),
         )
         .file("src/foo.rs", "pub fn bar() {}")
         .file("src/bin.rs", "pub fn main() {}")
@@ -280,18 +186,22 @@ fn cargo_compile_api_exposes_artifact_paths() {
 #[cargo_test]
 fn cargo_compile_with_invalid_code() {
     let p = project()
-        .file("Cargo.toml", &named_bin_manifest("foo/bar", "foo"))
+        .file(
+            "Cargo.toml",
+            &named_bin_manifest(&namespaced_name(&["foo", "bar"]), "foo"),
+        )
         .file("src/foo.rs", "invalid rust code!")
         .build();
 
     p.cargo("build")
         .with_status(101)
-        .with_stderr_contains(
+        .with_stderr_contains(&format!(
             "\
-[ERROR] could not compile `foo/bar`
+[ERROR] could not compile `{}`
 
 To learn more, run the command again with --verbose.\n",
-        )
+            namespaced_name(&["foo", "bar"])
+        ))
         .run();
     assert!(p.root().join("Cargo.lock").is_file());
 }
@@ -301,12 +211,15 @@ fn cargo_compile_with_build_script_puts_output_in_correct_folder() {
     let p = project()
         .file(
             "Cargo.toml",
-            r#"
+            &format!(
+                r#"
                 [package]
-                name = "foo/bar"
+                name = "{}"
                 authors = []
                 version = "0.0.0"
             "#,
+                namespaced_name(&["foo", "bar"])
+            ),
         )
         .file("src/lib.rs", "pub fn bar() {}")
         .file("build.rs", "pub fn main() { println!(\"Hello world\"); }")
@@ -334,7 +247,8 @@ fn cargo_compile_with_subcrate_dependency() {
     let p = project()
         .file(
             "Cargo.toml",
-            r#"
+            &format!(
+                r#"
                 [package]
                 name = "foo"
                 version = "0.0.1"
@@ -342,8 +256,10 @@ fn cargo_compile_with_subcrate_dependency() {
                 authors = []
 
                 [dependencies]
-                "foo/bar" = { path = "../foo-bar" }
+                "{}" = {{ path = "../foo-bar" }}
             "#,
+                namespaced_name(&["foo", "bar"])
+            ),
         )
         .file(
             "src/main.rs",
@@ -354,13 +270,16 @@ fn cargo_compile_with_subcrate_dependency() {
         .at("foo-bar")
         .file(
             "Cargo.toml",
-            r#"
+            &format!(
+                r#"
                 [package]
-                name = "foo/bar"
+                name = "{}"
                 version = "0.0.1"
                 edition = "2018"
                 authors = []
             "#,
+                namespaced_name(&["foo", "bar"])
+            ),
         )
         .file("src/lib.rs", "pub fn answer() -> i32 { 42 }")
         .build();
