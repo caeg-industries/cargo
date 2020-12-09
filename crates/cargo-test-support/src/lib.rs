@@ -15,6 +15,7 @@ use std::process::{Command, Output};
 use std::str;
 use std::time::{self, Duration};
 
+use cargo::core::manifest::SUBCRATE_DELIMETER;
 use cargo::util::{is_ci, CargoResult, ProcessBuilder, ProcessError, Rustc};
 use serde_json::{self, Value};
 use url::Url;
@@ -1458,6 +1459,10 @@ impl<T> Tap for T {
         callback(&mut self);
         self
     }
+}
+
+pub fn namespaced_name(name_parts: &[&str]) -> String {
+    name_parts.join(SUBCRATE_DELIMETER)
 }
 
 pub fn basic_manifest(name: &str, version: &str) -> String {

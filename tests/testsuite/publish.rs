@@ -1,9 +1,12 @@
 //! Tests for the `cargo publish` command.
 
-use cargo_test_support::git::{self, repo};
 use cargo_test_support::paths;
 use cargo_test_support::registry::{self, registry_path, registry_url, Package};
 use cargo_test_support::{basic_manifest, no_such_file_err_msg, project, publish};
+use cargo_test_support::{
+    git::{self, repo},
+    namespaced_name,
+};
 use std::fs;
 
 const CLEAN_FOO_JSON: &str = r#"
@@ -58,27 +61,30 @@ fn validate_upload_foo() {
 
 fn validate_upload_foo_bar() {
     publish::validate_upload(
-        r#"
-        {
+        &format!(
+            r#"
+        {{
           "authors": [],
-          "badges": {},
+          "badges": {{}},
           "categories": [],
           "deps": [],
           "description": "foo bar",
           "documentation": null,
-          "features": {},
+          "features": {{}},
           "homepage": null,
           "keywords": [],
           "license": "MIT",
           "license_file": null,
           "links": null,
-          "name": "foo/bar",
+          "name": "{name}",
           "readme": null,
           "readme_file": null,
           "repository": null,
           "vers": "0.0.1"
-          }
+          }}
         "#,
+            name = namespaced_name(&["foo", "bar"])
+        ),
         "foo~bar-0.0.1.crate",
         &["Cargo.lock", "Cargo.toml", "Cargo.toml.orig", "src/main.rs"],
     );
@@ -140,14 +146,17 @@ fn simple_with_a_subcrate() {
     let p = project()
         .file(
             "Cargo.toml",
-            r#"
+            &format!(
+                r#"
                 [project]
-                name = "foo/bar"
+                name = "{}"
                 version = "0.0.1"
                 authors = []
                 license = "MIT"
                 description = "foo bar"
             "#,
+                namespaced_name(&["foo", "bar"])
+            ),
         )
         .file("src/main.rs", "fn main() {}")
         .build();
@@ -158,9 +167,10 @@ fn simple_with_a_subcrate() {
 [UPDATING] `{reg}` index
 [WARNING] manifest has no documentation, [..]
 See [..]
-[PACKAGING] foo/bar v0.0.1 ([CWD])
-[UPLOADING] foo/bar v0.0.1 ([CWD])
+[PACKAGING] {name} v0.0.1 ([CWD])
+[UPLOADING] {name} v0.0.1 ([CWD])
 ",
+            name = namespaced_name(&["foo", "bar"]),
             reg = registry::registry_path().to_str().unwrap()
         ))
         .run();

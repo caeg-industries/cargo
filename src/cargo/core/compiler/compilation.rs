@@ -315,7 +315,7 @@ fn fill_rustc_tool_env(mut cmd: ProcessBuilder, unit: &Unit) -> ProcessBuilder {
     if unit.target.is_bin() {
         cmd.env("CARGO_BIN_NAME", unit.target.file_safe_name());
     }
-    cmd.env("CARGO_CRATE_NAME", unit.target.crate_name()); // Question: Should this be one of the 'safe' versions?
+    cmd.env("CARGO_CRATE_NAME", unit.target.crate_name());
     cmd
 }
 

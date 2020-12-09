@@ -2,17 +2,12 @@
 
 use cargo::{
     core::compiler::CompileMode,
-    core::manifest::SUBCRATE_DELIMETER,
     core::{Shell, Workspace},
     ops::CompileOptions,
     Config,
 };
-use cargo_test_support::{main_file, named_bin_manifest, paths, project};
+use cargo_test_support::{main_file, named_bin_manifest, namespaced_name, paths, project};
 use std::env;
-
-fn namespaced_name(name_parts: &[&str]) -> String {
-    name_parts.join(SUBCRATE_DELIMETER)
-}
 
 #[cargo_test]
 fn cargo_compile_simple() {
