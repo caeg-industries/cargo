@@ -328,3 +328,45 @@ fn cargo_compile_with_build_script_puts_output_in_correct_folder() {
         .unwrap_or_else(|e| panic!("could not read file {}: {}", matches[0].path().display(), e));
     assert_eq!(output_contents, "Hello world\n");
 }
+
+#[cargo_test]
+fn cargo_compile_with_subcrate_dependency() {
+    let p = project()
+        .file(
+            "Cargo.toml",
+            r#"
+                [package]
+                name = "foo"
+                version = "0.0.1"
+                edition = "2018"
+                authors = []
+
+                [dependencies]
+                "foo/bar" = { path = "../foo-bar" }
+            "#,
+        )
+        .file(
+            "src/main.rs",
+            "fn main() {println!(\"The answer is {}\", foo_bar::answer());}",
+        )
+        .build();
+    let _bar = project()
+        .at("foo-bar")
+        .file(
+            "Cargo.toml",
+            r#"
+                [package]
+                name = "foo/bar"
+                version = "0.0.1"
+                edition = "2018"
+                authors = []
+            "#,
+        )
+        .file("src/lib.rs", "pub fn answer() -> i32 { 42 }")
+        .build();
+    p.cargo("build").run();
+
+    p.process(&p.bin("foo"))
+        .with_stdout("The answer is 42\n")
+        .run();
+}
