@@ -1,5 +1,6 @@
 use crate::git::repo;
 use crate::paths;
+use cargo::core::manifest::SUBCRATE_DELIMETER;
 use cargo::sources::CRATES_IO_INDEX;
 use cargo::util::Sha256;
 use flate2::write::GzEncoder;
@@ -431,11 +432,18 @@ impl Package {
         })
         .to_string();
 
-        let file = match self.name.len() {
-            1 => format!("1/{}", self.name),
-            2 => format!("2/{}", self.name),
-            3 => format!("3/{}/{}", &self.name[..1], self.name),
-            _ => format!("{}/{}/{}", &self.name[0..2], &self.name[2..4], self.name),
+        let namespace = self.name.split(SUBCRATE_DELIMETER).next().unwrap();
+        let index_crate_name = self.name.replace(SUBCRATE_DELIMETER, "@/");
+        let file = match namespace.len() {
+            1 => format!("1/{}", index_crate_name),
+            2 => format!("2/{}", index_crate_name),
+            3 => format!("3/{}/{}", &namespace[..1], index_crate_name),
+            _ => format!(
+                "{}/{}/{}",
+                &namespace[0..2],
+                &namespace[2..4],
+                index_crate_name
+            ),
         };
 
         let registry_path = if self.alternative {

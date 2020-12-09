@@ -1,4 +1,4 @@
-use crate::core::{GitReference, PackageId, SourceId};
+use crate::core::{manifest::SUBCRATE_DELIMETER, GitReference, PackageId, SourceId};
 use crate::sources::git;
 use crate::sources::registry::MaybeLock;
 use crate::sources::registry::{
@@ -21,11 +21,12 @@ use std::path::Path;
 use std::str;
 
 fn make_dep_prefix(name: &str) -> String {
-    match name.len() {
+    let namespace = name.split(SUBCRATE_DELIMETER).next().unwrap();
+    match namespace.len() {
         1 => String::from("1"),
         2 => String::from("2"),
-        3 => format!("3/{}", &name[..1]),
-        _ => format!("{}/{}", &name[0..2], &name[2..4]),
+        3 => format!("3/{}", &namespace[..1]),
+        _ => format!("{}/{}", &namespace[0..2], &namespace[2..4]),
     }
 }
 
@@ -320,7 +321,7 @@ impl<'cfg> RegistryData for RemoteRegistry<'cfg> {
     }
 
     fn is_crate_downloaded(&self, pkg: PackageId) -> bool {
-        let filename = format!("{}-{}.crate", pkg.name(), pkg.version());
+        let filename = format!("{}-{}.crate", pkg.registry_safe_file_name(), pkg.version());
         let path = Path::new(&filename);
 
         let path = self.cache_path.join(path);
@@ -342,6 +343,7 @@ impl<'cfg> Drop for RemoteRegistry<'cfg> {
 #[cfg(test)]
 mod tests {
     use super::make_dep_prefix;
+    use crate::core::manifest::SUBCRATE_DELIMETER;
 
     #[test]
     fn dep_prefix() {
@@ -351,5 +353,13 @@ mod tests {
         assert_eq!(make_dep_prefix("Abc"), "3/A");
         assert_eq!(make_dep_prefix("AbCd"), "Ab/Cd");
         assert_eq!(make_dep_prefix("aBcDe"), "aB/cD");
+    }
+
+    #[test]
+    fn dep_prefix_with_subcrates() {
+        assert_eq!(
+            make_dep_prefix(&format!("foo{}bar", SUBCRATE_DELIMETER)),
+            "3/f"
+        );
     }
 }

@@ -66,7 +66,7 @@
 //! details like invalidating caches and whatnot which are handled below, but
 //! hopefully those are more obvious inline in the code itself.
 
-use crate::core::dependency::Dependency;
+use crate::core::{dependency::Dependency, manifest::SUBCRATE_DELIMETER};
 use crate::core::{PackageId, SourceId, Summary};
 use crate::sources::registry::{RegistryData, RegistryPackage};
 use crate::util::interning::InternedString;
@@ -333,11 +333,19 @@ impl<'cfg> RegistryIndex<'cfg> {
             .chars()
             .flat_map(|c| c.to_lowercase())
             .collect::<String>();
-        let raw_path = match fs_name.len() {
-            1 => format!("1/{}", fs_name),
-            2 => format!("2/{}", fs_name),
-            3 => format!("3/{}/{}", &fs_name[..1], fs_name),
-            _ => format!("{}/{}/{}", &fs_name[0..2], &fs_name[2..4], fs_name),
+
+        let fs_namespace = fs_name.split(SUBCRATE_DELIMETER).next().unwrap();
+        let fs_crate_part = fs_name.replace(SUBCRATE_DELIMETER, "@/");
+        let raw_path = match fs_namespace.len() {
+            1 => format!("1/{}", fs_crate_part),
+            2 => format!("2/{}", fs_crate_part),
+            3 => format!("3/{}/{}", &fs_namespace[..1], fs_crate_part),
+            _ => format!(
+                "{}/{}/{}",
+                &fs_namespace[0..2],
+                &fs_namespace[2..4],
+                fs_crate_part
+            ),
         };
 
         // Attempt to handle misspellings by searching for a chain of related
