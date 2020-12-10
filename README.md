@@ -80,7 +80,36 @@ correctly by inspecting the version number.
 
 ## Windows Setup
 
-- TODO: Adapt the Linux steps for Windows
+You first need to clone a Rustup toolchain that you already have
+installed.
+
+Depending on which channel you use, you may need to change the source path to
+your platform's toolchain.
+
+```
+xcopy /E /I %USERPROFILE%\.rustup\toolchains\stable-x86_64-pc-windows-msvc %USERPROFILE%\.rustup\toolchains\subcrate
+```
+
+After this, you can use `cargo install` to download, compile, and
+install the fork into your custom toolchain. This will overwrite the
+`cargo` binary in your new toolchain with the fork.
+
+```
+cargo install --force --git https://github.com/caeg-industries/cargo.git --branch subcrates --root %USERPROFILE%\.rustup\toolchains\subcrate -- cargo
+```
+
+After running this, you'll be able to run your usual version of Cargo
+and the fork interchangably by adding `+subcrate` after `cargo`. For
+example, here is how you would check that the installation worked
+correctly by inspecting the version number.
+
+```
+> cargo --version
+1.48.0
+
+> cargo +subcrate --version
+1.50.0-namespace-fork
+```
 
 ## Installing Without Rustup
 
