@@ -89,12 +89,170 @@ for other methods of building and using a fork of Cargo.
 
 # Publishing Your First Subcrate
 
-- TODO: Create a parent crate and some subcrates with path dependencies
-- TODO: Show a name conflict, and how to resolve it
-- TODO: cargo publish to the fork
-- TODO: Update dependencies to use crates.io fork
+Namespaced crates start with a regular crate to reserve the
+namespace. This is just a regular crate, no changes from normal Cargo
+behaviour.
 
-## Reporting issues
+parent/Cargo.toml
+```
+[package]
+name = "parent"
+description = "the parent crate!"
+version = "0.1.0"
+authors = ["You"]
+edition = "2018"
+license = "MIT"
+```
+
+parent/src/main.rs
+```
+fn main() {
+    println!("Hello world!");
+}
+```
+
+## Creating Subcrates
+
+However, with this fork, you can now create a new subcrate which is in
+the `parent` namespace.
+
+When compiling any of these examples, make sure to add `+subcrate` to
+any `cargo` commands to use the fork of Cargo. For example, built with
+`cargo +subcrate build`.
+
+parent-foo/Cargo.toml
+```
+[package]
+name = "parent/foo"
+description = "this is a subcrate"
+version = "0.1.0"
+authors = ["You"]
+edition = "2018"
+license = "MIT"
+```
+
+parent-foo/src/lib.rs
+```
+pub fn do_foo() {
+    println!("Hello world from parent/foo!");
+}
+```
+
+Let's say we want to create another subcrate that depends on
+`parent/foo`. You do it the same way you have any other
+dependency. Note that, to be valid TOML, you need to quote namespaced
+package names.
+
+In Rust code, the namespace separator is replaced with a `_`.
+
+## Depending on Subcrates
+
+parent-bar/Cargo.toml
+```
+[package]
+name = "parent/bar"
+description = "this is a subcrate"
+version = "0.1.0"
+authors = ["You"]
+edition = "2018"
+license = "MIT"
+
+[dependencies]
+"parent/foo" = { path = "../parent-foo" }
+```
+
+parent-bar/src/lib.rs
+```
+use parent_foo::do_foo;
+
+pub fn do_bar() {
+    do_foo();
+    println!("Hello world from parent/bar!");
+}
+```
+
+## Resolving Name Conflicts
+
+Suppose that another crate called `parent_foo` already exists. As you
+migrate from using `parent_foo` to `parent/foo`, you might want to
+depend on both at the same time! To do this, you need to rename one of
+them in your Cargo.toml.
+
+parent-baz/Cargo.toml
+```
+[package]
+name = "parent/baz"
+description = "this is a subcrate"
+version = "0.1.0"
+authors = ["You"]
+edition = "2018"
+license = "MIT"
+
+[dependencies]
+"parent-foo" = "0.1.0"
+"new-parent-foo" = { path = "../parent-foo", package = "parent/foo" }
+```
+
+parent-baz/src/lib.rs
+```
+use parent_foo::old_lib_do_foo;
+use new_parent_foo::do_foo;
+
+pub fn do_baz() {
+    old_lib_do_foo();
+    do_foo();
+    println!("Hello world from parent/baz!");
+}
+```
+
+## Publishing to the Crates.io Fork
+
+We have a fork of crates.io that supports crates with namespaces. To
+use it, go to <TODO: fork URL here>. Login using Github and generate
+an API token as usual.
+
+When you're ready to publish, you need to point your publish at the
+'index' of the forked crates.io
+(https://github.com/caeg-industries/crates.io-namespace-fork-index.git).
+
+For example,
+```
+cargo +subcrate publish --index https://github.com/caeg-industries/crates.io-namespace-fork-index.git --token "$YOUR_TOKEN"
+```
+
+## Depending on the Crates.io Fork
+
+Up to now, we've shown path dependencies to subcrates. To depend on a
+package in the fork of crates.io that we just published to, we first
+need to add the registry the .cargo/config.toml file.
+
+parent-bar/.cargo/config.toml
+```
+[registries]
+namespace-fork = { index = "https://github.com/caeg-industries/crates.io-namespace-fork-index.git" }
+```
+
+Then, when you depend on the package in your Cargo.toml, add the
+"registry" key to your dependency.
+
+parent-bar/Cargo.toml
+```
+[package]
+name = "parent/bar"
+description = "this is a subcrate"
+version = "0.1.0"
+authors = ["You"]
+edition = "2018"
+license = "MIT"
+
+[dependencies]
+"parent/foo" = { version = "0.1.0", registry = "namespace-fork" }
+```
+
+For more information, the full docs on how to use an alternative
+registry is available in [Cargo's docs](https://doc.rust-lang.org/cargo/reference/registries.html#using-an-alternate-registry).
+
+# Reporting issues
 
 Found a bug? We'd love to know about it!
 
