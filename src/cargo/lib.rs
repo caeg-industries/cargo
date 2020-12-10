@@ -81,6 +81,8 @@ impl fmt::Display for VersionInfo {
                 let empty = String::new();
                 write!(f, "{}", self.pre_release.as_ref().unwrap_or(&empty))?;
             }
+        } else if let Some(pre_release) = self.pre_release.as_ref() {
+            write!(f, "-{}", pre_release)?
         };
 
         if let Some(ref cfg) = self.cfg_info {
