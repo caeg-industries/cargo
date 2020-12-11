@@ -48,14 +48,15 @@ These steps require the following tools:
 You first need to clone a Rustup toolchain that you already have
 installed.
 
-Depending on your platform, you may need to change the source path to
-your platform's toolchain. Note that the `-s` flag is being passed to
-`cp`, so it will create symlinks to your existing toolchain rather
-than copying the files. This is done to save hard drive space.
-
 ```
 cp -rs ~/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/ ~/.rustup/toolchains/subcrate/
 ```
+
+> Depending on your platform, you may need to change the source path to
+> your platform's toolchain. Note that the `-s` flag is being passed to
+> `cp`, so it will create symlinks to your existing toolchain rather
+> than copying the files. This is done to save hard drive space.
+
 
 After this, you can use `cargo install` to download, compile, and
 install the fork into your custom toolchain. This will overwrite the
@@ -83,12 +84,12 @@ correctly by inspecting the version number.
 You first need to clone a Rustup toolchain that you already have
 installed.
 
-Depending on which channel you use, you may need to change the source path to
-your platform's toolchain.
-
 ```
 xcopy /E /I %USERPROFILE%\.rustup\toolchains\stable-x86_64-pc-windows-msvc %USERPROFILE%\.rustup\toolchains\subcrate
 ```
+
+> Depending on which channel you use, you may need to change the source path to
+> your platform's toolchain.
 
 After this, you can use `cargo install` to download, compile, and
 install the fork into your custom toolchain. This will overwrite the
@@ -122,8 +123,9 @@ Namespaced crates start with a regular crate to reserve the
 namespace. This is just a regular crate, no changes from normal Cargo
 behaviour.
 
-parent/Cargo.toml
-```
+```toml
+# parent/Cargo.toml
+
 [package]
 name = "parent"
 description = "the parent crate!"
