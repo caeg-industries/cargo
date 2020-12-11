@@ -149,7 +149,7 @@ However, with this fork, you can now create a new subcrate which is in
 the `parent` namespace.
 
 When compiling any of these examples, make sure to add `+subcrate` to
-any `cargo` commands to use the fork of Cargo. For example, built with
+any `cargo` commands to use the fork of Cargo. For example, build with
 `cargo +subcrate build`.
 
 ```toml
@@ -172,14 +172,13 @@ pub fn do_foo() {
 }
 ```
 
-Let's say we want to create another subcrate that depends on
-`parent/foo`. You do it the same way you have any other
-dependency. Note that, to be valid TOML, you need to quote namespaced
-package names.
-
-In Rust code, the namespace separator is replaced with a `_`.
-
 ## Depending on Subcrates
+
+Let's say we want to create another subcrate that depends on
+`parent/foo`. You do it the same way as any other dependency. Note
+that, to be valid TOML, you need to quote namespaced package names.
+
+In Rust code, the namespace separator is replaced with an `_`.
 
 ```toml
 # parent-bar/Cargo.toml
@@ -209,8 +208,8 @@ pub fn do_bar() {
 
 ## Resolving Name Conflicts
 
-Suppose that another crate called `parent_foo` already exists. As you
-migrate from using `parent_foo` to `parent/foo`, you might want to
+Suppose that another crate called `parent-foo` already exists. As you
+migrate from using `parent-foo` to `parent/foo`, you might want to
 depend on both at the same time! To do this, you need to rename one of
 them in your Cargo.toml.
 
