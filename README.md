@@ -48,7 +48,7 @@ These steps require the following tools:
 You first need to clone a Rustup toolchain that you already have
 installed.
 
-```
+```sh
 cp -rs ~/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/ ~/.rustup/toolchains/subcrate/
 ```
 
@@ -62,7 +62,7 @@ After this, you can use `cargo install` to download, compile, and
 install the fork into your custom toolchain. This will overwrite the
 `cargo` binary in your new toolchain with the fork.
 
-```
+```sh
 cargo install --force --git https://github.com/caeg-industries/cargo.git --branch subcrates --root ~/.rustup/toolchains/subcrate/ -- cargo
 ```
 
@@ -71,7 +71,7 @@ and the fork interchangably by adding `+subcrate` after `cargo`. For
 example, here is how you would check that the installation worked
 correctly by inspecting the version number.
 
-```
+```sh
 > cargo --version
 1.48.0
 
@@ -84,7 +84,7 @@ correctly by inspecting the version number.
 You first need to clone a Rustup toolchain that you already have
 installed.
 
-```
+```sh
 xcopy /E /I %USERPROFILE%\.rustup\toolchains\stable-x86_64-pc-windows-msvc %USERPROFILE%\.rustup\toolchains\subcrate
 ```
 
@@ -95,7 +95,7 @@ After this, you can use `cargo install` to download, compile, and
 install the fork into your custom toolchain. This will overwrite the
 `cargo` binary in your new toolchain with the fork.
 
-```
+```sh
 cargo install --force --git https://github.com/caeg-industries/cargo.git --branch subcrates --root %USERPROFILE%\.rustup\toolchains\subcrate -- cargo
 ```
 
@@ -104,7 +104,7 @@ and the fork interchangably by adding `+subcrate` after `cargo`. For
 example, here is how you would check that the installation worked
 correctly by inspecting the version number.
 
-```
+```sh
 > cargo --version
 1.48.0
 
@@ -135,8 +135,9 @@ edition = "2018"
 license = "MIT"
 ```
 
-parent/src/main.rs
-```
+```rust
+// parent/src/main.rs
+
 fn main() {
     println!("Hello world!");
 }
@@ -151,8 +152,9 @@ When compiling any of these examples, make sure to add `+subcrate` to
 any `cargo` commands to use the fork of Cargo. For example, built with
 `cargo +subcrate build`.
 
-parent-foo/Cargo.toml
-```
+```toml
+# parent-foo/Cargo.toml
+
 [package]
 name = "parent/foo"
 description = "this is a subcrate"
@@ -162,8 +164,9 @@ edition = "2018"
 license = "MIT"
 ```
 
-parent-foo/src/lib.rs
-```
+```rust
+// parent-foo/src/lib.rs
+
 pub fn do_foo() {
     println!("Hello world from parent/foo!");
 }
@@ -178,8 +181,9 @@ In Rust code, the namespace separator is replaced with a `_`.
 
 ## Depending on Subcrates
 
-parent-bar/Cargo.toml
-```
+```toml
+# parent-bar/Cargo.toml
+
 [package]
 name = "parent/bar"
 description = "this is a subcrate"
@@ -192,8 +196,9 @@ license = "MIT"
 "parent/foo" = { path = "../parent-foo" }
 ```
 
-parent-bar/src/lib.rs
-```
+```rust
+// parent-bar/src/lib.rs
+
 use parent_foo::do_foo;
 
 pub fn do_bar() {
@@ -209,8 +214,9 @@ migrate from using `parent_foo` to `parent/foo`, you might want to
 depend on both at the same time! To do this, you need to rename one of
 them in your Cargo.toml.
 
-parent-baz/Cargo.toml
-```
+```toml
+# parent-baz/Cargo.toml
+
 [package]
 name = "parent/baz"
 description = "this is a subcrate"
@@ -224,8 +230,9 @@ license = "MIT"
 "new-parent-foo" = { path = "../parent-foo", package = "parent/foo" }
 ```
 
-parent-baz/src/lib.rs
-```
+```rust
+// parent-baz/src/lib.rs
+
 use parent_foo::old_lib_do_foo;
 use new_parent_foo::do_foo;
 
@@ -247,7 +254,7 @@ When you're ready to publish, you need to point your publish at the
 (https://github.com/caeg-industries/crates.io-namespace-fork-index.git).
 
 For example,
-```
+```shell
 cargo +subcrate publish --index https://github.com/caeg-industries/crates.io-namespace-fork-index.git --token "$YOUR_TOKEN"
 ```
 
@@ -257,8 +264,9 @@ Up to now, we've shown path dependencies to subcrates. To depend on a
 package in the fork of crates.io that we just published to, we first
 need to add the registry the .cargo/config.toml file.
 
-parent-bar/.cargo/config.toml
-```
+```toml
+# parent-bar/.cargo/config.toml
+
 [registries]
 namespace-fork = { index = "https://github.com/caeg-industries/crates.io-namespace-fork-index.git" }
 ```
@@ -266,8 +274,9 @@ namespace-fork = { index = "https://github.com/caeg-industries/crates.io-namespa
 Then, when you depend on the package in your Cargo.toml, add the
 "registry" key to your dependency.
 
-parent-bar/Cargo.toml
-```
+```toml
+# parent-bar/Cargo.toml
+
 [package]
 name = "parent/bar"
 description = "this is a subcrate"
