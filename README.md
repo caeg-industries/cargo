@@ -245,7 +245,7 @@ pub fn do_baz() {
 ## Publishing to the Crates.io Fork
 
 We have a fork of crates.io that supports crates with namespaces. To
-use it, go to <TODO: fork URL here>. Login using Github and generate
+use it, go to <https://expcrates.caeg.co.za>. Login using Github and generate
 an API token as usual.
 
 When you're ready to publish, you need to point your publish at the
