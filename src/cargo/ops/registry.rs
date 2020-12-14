@@ -13,9 +13,12 @@ use curl::easy::{Easy, InfoType, SslOpt, SslVersion};
 use log::{log, Level};
 use percent_encoding::{percent_encode, NON_ALPHANUMERIC};
 
-use crate::core::dependency::DepKind;
 use crate::core::manifest::ManifestMetadata;
 use crate::core::source::Source;
+use crate::core::{
+    dependency::DepKind,
+    manifest::{SUBCRATE_DELIMETER, SUBCRATE_DELIMETER_REGISTRY_FILENAME_REPLACEMENT},
+};
 use crate::core::{Package, SourceId, Workspace};
 use crate::ops;
 use crate::sources::{RegistrySource, SourceConfigMap, CRATES_IO_REGISTRY};
@@ -807,6 +810,10 @@ pub fn modify_owners(config: &Config, opts: &OwnersOptions) -> CargoResult<()> {
             ws.current()?.package_id().name().to_string()
         }
     };
+    let registry_safe_name = name.replace(
+        SUBCRATE_DELIMETER,
+        SUBCRATE_DELIMETER_REGISTRY_FILENAME_REPLACEMENT,
+    );
 
     let (mut registry, _, _) = registry(
         config,
@@ -820,7 +827,7 @@ pub fn modify_owners(config: &Config, opts: &OwnersOptions) -> CargoResult<()> {
     if let Some(ref v) = opts.to_add {
         let v = v.iter().map(|s| &s[..]).collect::<Vec<_>>();
         let msg = registry
-            .add_owners(&name, &v)
+            .add_owners(&registry_safe_name, &v)
             .map_err(|e| format_err!("failed to invite owners to crate {}: {}", name, e))?;
 
         config.shell().status("Owner", msg)?;
@@ -832,13 +839,13 @@ pub fn modify_owners(config: &Config, opts: &OwnersOptions) -> CargoResult<()> {
             .shell()
             .status("Owner", format!("removing {:?} from crate {}", v, name))?;
         registry
-            .remove_owners(&name, &v)
+            .remove_owners(&registry_safe_name, &v)
             .chain_err(|| format!("failed to remove owners from crate {}", name))?;
     }
 
     if opts.list {
         let owners = registry
-            .list_owners(&name)
+            .list_owners(&registry_safe_name)
             .chain_err(|| format!("failed to list owners of crate {}", name))?;
         for owner in owners.iter() {
             drop_print!(config, "{}", owner.login);
