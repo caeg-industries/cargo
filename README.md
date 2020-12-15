@@ -261,10 +261,12 @@ cargo +subcrate publish --index https://github.com/caeg-industries/crates.io-nam
 
 Up to now, we've shown path dependencies to subcrates. To depend on a
 package in the fork of crates.io that we just published to, we first
-need to add the registry the .cargo/config.toml file.
+need to tell Cargo about our custom registry. We do this by adding an
+entry to our Cargo config file. This file is `~/.cargo/config.toml` on
+Linux and Mac, or `%USERPROFILE%\.cargo\config.toml` on Windows.
 
 ```toml
-# parent-bar/.cargo/config.toml
+# ~/.cargo/config.toml
 
 [registries]
 namespace-fork = { index = "https://github.com/caeg-industries/crates.io-namespace-fork-index.git" }
