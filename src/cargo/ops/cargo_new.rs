@@ -382,7 +382,7 @@ fn plan_new_source_file(bin: bool, package_name: String) -> SourceFileInformatio
     }
 }
 
-pub fn new(opts: &NewOptions, config: &Config) -> CargoResult<()> {
+pub fn new(opts: &NewOptions, config: &Config) -> CargoResult<String> {
     let path = &opts.path;
     if path.exists() {
         anyhow::bail!(
@@ -418,7 +418,7 @@ pub fn new(opts: &NewOptions, config: &Config) -> CargoResult<()> {
             path.display()
         )
     })?;
-    Ok(())
+    Ok(name.to_string())
 }
 
 pub fn init(opts: &NewOptions, config: &Config) -> CargoResult<()> {
