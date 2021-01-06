@@ -1,4 +1,4 @@
-use crate::core::{Shell, Workspace};
+use crate::core::{manifest::SUBCRATE_DELIMETER, Shell, Workspace};
 use crate::util::errors::{CargoResult, CargoResultExt};
 use crate::util::{existing_vcs_repo, FossilRepo, GitRepo, HgRepo, PijulRepo};
 use crate::util::{paths, restricted_names, Config};
@@ -54,6 +54,8 @@ pub struct NewOptions {
     pub kind: NewProjectKind,
     /// Absolute path to the directory for the new package
     pub path: PathBuf,
+    /// Path argument as passed to the CLI
+    pub raw_path: String,
     pub name: Option<String>,
     pub edition: Option<String>,
     pub registry: Option<String>,
@@ -103,6 +105,7 @@ impl NewOptions {
         bin: bool,
         lib: bool,
         path: PathBuf,
+        raw_path: String,
         name: Option<String>,
         edition: Option<String>,
         registry: Option<String>,
@@ -118,6 +121,7 @@ impl NewOptions {
             version_control,
             kind,
             path,
+            raw_path,
             name,
             edition,
             registry,
@@ -158,6 +162,7 @@ fn check_name(
     name: &str,
     show_name_help: bool,
     has_bin: bool,
+    raw_path: &str,
     shell: &mut Shell,
 ) -> CargoResult<()> {
     // If --name is already used to override, no point in suggesting it
@@ -168,6 +173,19 @@ fn check_name(
         ""
     };
     restricted_names::validate_package_name(name, "crate name", name_help)?;
+
+    if show_name_help
+        && name != raw_path
+        && raw_path.contains(SUBCRATE_DELIMETER)
+        && restricted_names::validate_package_name(raw_path, "crate name", name_help).is_ok()
+    {
+        shell.warn(format!(
+            "Cargo will use only the directory name as a crate name ({})\n\
+             The path that you provided is also a valid namespaced crate name, so this may not be what you intended.{}",
+            name,
+            name_help
+        ))?;
+    }
 
     if restricted_names::is_keyword(name) {
         anyhow::bail!(
@@ -364,7 +382,7 @@ fn plan_new_source_file(bin: bool, package_name: String) -> SourceFileInformatio
     }
 }
 
-pub fn new(opts: &NewOptions, config: &Config) -> CargoResult<()> {
+pub fn new(opts: &NewOptions, config: &Config) -> CargoResult<String> {
     let path = &opts.path;
     if path.exists() {
         anyhow::bail!(
@@ -379,6 +397,7 @@ pub fn new(opts: &NewOptions, config: &Config) -> CargoResult<()> {
         name,
         opts.name.is_none(),
         opts.kind.is_bin(),
+        &opts.raw_path,
         &mut config.shell(),
     )?;
 
@@ -399,7 +418,7 @@ pub fn new(opts: &NewOptions, config: &Config) -> CargoResult<()> {
             path.display()
         )
     })?;
-    Ok(())
+    Ok(name.to_string())
 }
 
 pub fn init(opts: &NewOptions, config: &Config) -> CargoResult<()> {
@@ -428,7 +447,13 @@ pub fn init(opts: &NewOptions, config: &Config) -> CargoResult<()> {
         // user may mean "initialize for library, but also add binary target"
     }
     let has_bin = src_paths_types.iter().any(|x| x.bin);
-    check_name(name, opts.name.is_none(), has_bin, &mut config.shell())?;
+    check_name(
+        name,
+        opts.name.is_none(),
+        has_bin,
+        &opts.raw_path,
+        &mut config.shell(),
+    )?;
 
     let mut version_control = opts.version_control;
 
